@@ -1,5 +1,5 @@
 def get_valid_input():
-    user_input = input("Enter stock quantity (or 'quit' to stop): ").strip()
+    user_input = input("Enter stock quantity (or 'quit' to stop): ")
     if user_input.lower() == "quit":
         return "quit"
     if user_input.isdigit():
@@ -34,7 +34,6 @@ while True:
         failed_entries += 1
         continue
 
-    # 3. Valid value: update total, tax and counters
     total_inventory = process_delivery(total_inventory, result)
     tax = calculate_tax(result)
     total_tax += tax
@@ -47,5 +46,4 @@ while True:
         print(f"ALERT: Overstock! Total inventory ({total_inventory}) exceeds 500 units.")
         break
 
-# 4. Reporting
 generate_report(deliveries_processed, failed_entries)
