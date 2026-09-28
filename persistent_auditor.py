@@ -1,9 +1,8 @@
 ORDERS_FILE = "orders.txt"        
 INVENTORY_FILE = "inventory.txt"  
 
-
 def load_inventory():
-    
+
     orders = []
     total = 0
     history = []
@@ -90,6 +89,7 @@ while True:
         continue
 
     total_inventory = process_delivery(total_inventory, result)
+    transaction_history.append(result)
     total_tax += calculate_tax(result)
     deliveries_processed += 1
 
@@ -103,5 +103,6 @@ while True:
         print(f"ALERT: Overstock! Total inventory ({total_inventory}) exceeds 500 units.")
         break
 
-print(f"Running total after loaded data + new orders: {total_inventory}\n")
+print(f"Total: {total_inventory}")
+print(f"Transaction History: {transaction_history}\n")
 generate_report(deliveries_processed, failed_entries)
