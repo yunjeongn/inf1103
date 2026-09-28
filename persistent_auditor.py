@@ -1,5 +1,6 @@
-ORDERS_FILE = "orders.txt"        
+ORDERS_FILE = "orders.txt"       
 INVENTORY_FILE = "inventory.txt"  
+
 
 def load_inventory():
 
@@ -31,6 +32,18 @@ def load_inventory():
         total = sum(history)
 
     return orders, total, history
+
+
+def save_inventory(orders, total, history):
+
+    with open(INVENTORY_FILE, "w") as file:
+        file.write(f"{total}\n")
+        for amount in history:
+            file.write(f"{amount}\n")
+
+    with open(ORDERS_FILE, "w") as file:
+        for order_id, product, quantity in orders:
+            file.write(f"{order_id},{product},{quantity}\n")
 
 
 def display_orders(orders):
@@ -99,10 +112,13 @@ while True:
     print("\nNew Order Added:")
     print(f"{order_id},{product},{result}\n")
 
+    save_inventory(orders, total_inventory, transaction_history)
+    print(f"Order successfully saved to {ORDERS_FILE}\n")
+
     if total_inventory > 500:
         print(f"ALERT: Overstock! Total inventory ({total_inventory}) exceeds 500 units.")
         break
 
-print(f"Total: {total_inventory}")
-print(f"Transaction History: {transaction_history}\n")
+save_inventory(orders, total_inventory, transaction_history)
+print(f"Final total and transaction history saved to {INVENTORY_FILE}\n")
 generate_report(deliveries_processed, failed_entries)
