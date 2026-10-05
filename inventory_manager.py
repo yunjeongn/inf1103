@@ -1,15 +1,39 @@
+import json
 import math
+import os
 
+INVENTORY_FILE = "inventory.json"
 BANNER = "=" * 47
 LINE = "-" * 47
 
 
-def create_inventory():
-    return [
-        {"id": "P001", "name": "Laptop", "price": 1200.0, "stock": 15},
-        {"id": "P002", "name": "Mouse", "price": 25.5, "stock": 40},
-        {"id": "P003", "name": "Keyboard", "price": 45.0, "stock": 25},
-    ]
+def load_inventory():
+    if not os.path.exists(INVENTORY_FILE):
+        print(f"{INVENTORY_FILE} not found.")
+        print("Starting with an empty inventory.")
+        return []
+
+    try:
+        with open(INVENTORY_FILE, "r") as file:
+            inventory = json.load(file)
+        required = {"id", "name", "price", "stock"}
+        if not isinstance(inventory, list) or not all(
+            isinstance(item, dict) and required <= item.keys() for item in inventory
+        ):
+            raise ValueError("Unexpected file format")
+    except (OSError, ValueError):
+        print(f"{INVENTORY_FILE} found but could not be read.")
+        print("Starting with an empty inventory.")
+        try:
+            os.replace(INVENTORY_FILE, INVENTORY_FILE + ".bak")
+            print(f"The original file was kept as {INVENTORY_FILE}.bak")
+        except OSError:
+            pass
+        return []
+
+    print(f"{INVENTORY_FILE} found.")
+    print("Inventory loaded successfully.")
+    return inventory
 
 
 def find_product(inventory, product_id):
@@ -120,12 +144,14 @@ def print_menu():
     print("5. Exit")
     print("----------------------------")
 
+
 print(BANNER)
 print("INVENTORY MANAGEMENT SYSTEM")
 print(BANNER)
 print()
 
-inventory = create_inventory()
+inventory = load_inventory()
+print()
 print_menu()
 
 while True:
