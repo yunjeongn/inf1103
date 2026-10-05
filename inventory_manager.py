@@ -36,6 +36,16 @@ def load_inventory():
     return inventory
 
 
+def save_inventory(inventory):
+    try:
+        with open(INVENTORY_FILE, "w") as file:
+            json.dump(inventory, file, indent=4)
+        return True
+    except OSError as error:
+        print(f"Error. Could not save inventory: {error}")
+        return False
+
+
 def find_product(inventory, product_id):
     for product in inventory:
         if product["id"] == product_id:
@@ -141,7 +151,8 @@ def print_menu():
     print("2. Add Product")
     print("3. Update Stock")
     print("4. Search Product")
-    print("5. Exit")
+    print("5. Save Inventory")
+    print("6. Exit")
     print("----------------------------")
 
 
@@ -166,8 +177,15 @@ while True:
     elif choice == "4":
         search_product(inventory)
     elif choice == "5":
+        print("\nSaving inventory...")
+        if save_inventory(inventory):
+            print(f"Inventory saved successfully to {INVENTORY_FILE}.")
+    elif choice == "6":
+        print("\nSaving inventory before exiting...")
+        if save_inventory(inventory):
+            print("Inventory saved successfully.")
         print("\nThank you for using Inventory Management System.")
         print("Program terminated.")
         break
     else:
-        print("\nInvalid option. Please choose 1-5.")
+        print("\nInvalid option. Please choose 1-6.")
