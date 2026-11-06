@@ -197,36 +197,41 @@ def print_menu():
     print("----------------------------")
 
 
-print(BANNER)
-print("INVENTORY MANAGEMENT SYSTEM")
-print(BANNER)
-print()
+def main():
+    print(BANNER)
+    print("INVENTORY MANAGEMENT SYSTEM")
+    print(BANNER)
+    print()
 
-inventory = load_inventory()
-print()
-print_menu()
+    inventory = load_inventory()
+    print()
+    print_menu()
 
-while True:
-    choice = input("\nEnter option: ").strip()
+    while True:
+        choice = input("\nEnter option: ").strip()
 
-    if choice == "1":
-        inventory.display_all()
-    elif choice == "2":
-        add_product(inventory)
-    elif choice == "3":
-        update_stock(inventory)
-    elif choice == "4":
-        search_product(inventory)
-    elif choice == "5":
-        print("\nSaving inventory...")
-        if save_inventory(inventory):
-            print(f"Inventory saved successfully to {INVENTORY_FILE}.")
-    elif choice == "6":
-        print("\nSaving inventory before exiting...")
-        if save_inventory(inventory):
-            print("Inventory saved successfully.")
-        print("\nThank you for using Inventory Management System.")
-        print("Program terminated.")
-        break
-    else:
-        print("\nInvalid option. Please choose 1-6.")
+        if choice == "1":
+            inventory.display_all()
+        elif choice == "2":
+            add_product(inventory)
+        elif choice == "3":
+            update_stock(inventory)
+        elif choice == "4":
+            search_product(inventory)
+        elif choice == "5":
+            print("\nSaving inventory...")
+            if save_inventory(inventory):
+                print(f"Inventory saved successfully to {INVENTORY_FILE}.")
+        elif choice == "6":
+            print("\nSaving inventory before exiting...")
+            if save_inventory(inventory):
+                print("Inventory saved successfully.")
+            print("\nThank you for using Inventory Management System.")
+            print("Program terminated.")
+            break
+        else:
+            print("\nInvalid option. Please choose 1-6.")
+
+
+if __name__ == "__main__":
+    main()
