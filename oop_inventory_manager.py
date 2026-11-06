@@ -2,11 +2,38 @@ import json
 import math
 import os
 
-from product import Product
+from physical_product import PhysicalProduct
+from digital_product import DigitalProduct
 from inventory import Inventory, LINE
 
 INVENTORY_FILE = "inventory.json"
 BANNER = "=" * 47
+
+
+def product_from_dict(item):
+    product_type = item.get("type", "physical")
+    if product_type == "physical":
+        return PhysicalProduct(item["id"], item["name"], item["price"],
+                               item["stock"], item.get("weight", 0.0))
+    if product_type == "digital":
+        return DigitalProduct(item["id"], item["name"], item["price"],
+                              item["stock"], item["download_size"])
+    raise ValueError(f"Unknown product type: {product_type}")
+
+
+def product_to_dict(product):
+    item = {
+        "type": "digital" if isinstance(product, DigitalProduct) else "physical",
+        "id": product.get_product_id(),
+        "name": product.get_name(),
+        "price": product.get_price(),
+        "stock": product.get_stock(),
+    }
+    if isinstance(product, DigitalProduct):
+        item["download_size"] = product.get_download_size()
+    else:
+        item["weight"] = product.get_weight()
+    return item
 
 
 def load_inventory():
@@ -23,8 +50,7 @@ def load_inventory():
         if not isinstance(data, list):
             raise ValueError("Unexpected file format")
         for item in data:
-            product = Product(item["id"], item["name"], item["price"], item["stock"])
-            inventory.add_product(product)
+            inventory.add_product(product_from_dict(item))
     except (OSError, ValueError, KeyError, TypeError):
         print(f"{INVENTORY_FILE} found but could not be read.")
         print("Starting with an empty inventory.")
@@ -43,12 +69,7 @@ def load_inventory():
 def save_inventory(inventory):
     data = []
     for product in inventory.get_products():
-        data.append({
-            "id": product.get_product_id(),
-            "name": product.get_name(),
-            "price": product.get_price(),
-            "stock": product.get_stock(),
-        })
+        data.append(product_to_dict(product))
 
     try:
         with open(INVENTORY_FILE, "w") as file:
@@ -83,6 +104,26 @@ def get_stock(prompt):
         print("Error. Please enter a whole number (0 or more).")
 
 
+def get_non_negative_number(prompt):
+    while True:
+        value = input(prompt).strip()
+        try:
+            number = float(value)
+            if math.isfinite(number) and number >= 0:
+                return number
+        except ValueError:
+            pass
+        print("Error. Please enter a number (0 or more).")
+
+
+def get_product_type():
+    while True:
+        choice = input("Product Type (1. Physical, 2. Digital): ").strip()
+        if choice in ("1", "2"):
+            return choice
+        print("Error. Please enter 1 or 2.")
+
+
 def add_product(inventory):
     print("\nAdd New Product")
     product_id = input("Product ID: ").strip().upper()
@@ -98,10 +139,16 @@ def add_product(inventory):
         print("\nError. Product name cannot be empty.")
         return
 
+    product_type = get_product_type()
     price = get_price()
     stock = get_stock("Stock Quantity: ")
 
-    product = Product(product_id, name, price, stock)
+    if product_type == "1":
+        weight = get_non_negative_number("Weight (kg): ")
+        product = PhysicalProduct(product_id, name, price, stock, weight)
+    else:
+        size = get_non_negative_number("Download Size (MB): ")
+        product = DigitalProduct(product_id, name, price, stock, size)
     inventory.add_product(product)
     print("\nProduct added successfully!")
 
@@ -135,6 +182,7 @@ def search_product(inventory):
     print("\nProduct Found")
     print(LINE)
     product.display_information()
+    print(product.get_fulfilment_info())
     print(LINE)
 
 
