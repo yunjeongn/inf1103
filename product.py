@@ -1,7 +1,8 @@
 import math
+from abc import ABC, abstractmethod
 
 
-class Product:
+class Product(ABC):
     def __init__(self, product_id, name, price, stock):
         product_id = str(product_id).strip()
         name = str(name).strip()
@@ -43,6 +44,10 @@ class Product:
         print(f"Name: {self.__name}")
         print(f"Price: ${self.__price:.2f}")
         print(f"Stock: {self.__stock}")
+
+    @abstractmethod
+    def get_fulfilment_info(self):
+        pass
 
     def __str__(self):
         return (f"ID: {self.__product_id} | Name: {self.__name} | "
