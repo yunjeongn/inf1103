@@ -49,9 +49,9 @@ class ProductTests(unittest.TestCase):
         self.assertTrue(inventory.add_product(self.physical))
         self.assertTrue(inventory.add_product(self.digital))
         self.assertFalse(inventory.add_product(self.physical))
-        inventory.search_product("G1").update_stock(7)
-        self.assertEqual(inventory.search_product("G1").get_stock(), 7)
-        self.assertIsNone(inventory.search_product("NOPE"))
+        inventory.find_product("G1").update_stock(7)
+        self.assertEqual(inventory.find_product("G1").get_stock(), 7)
+        self.assertIsNone(inventory.find_product("NOPE"))
 
     def test_json_round_trip_keeps_types(self):
         for original in (self.physical, self.digital):
