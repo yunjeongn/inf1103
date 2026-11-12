@@ -2,8 +2,8 @@ from product import Product
 
 
 class DigitalProduct(Product):
-    def __init__(self, product_id, name, price, stock, download_size):
-        super().__init__(product_id, name, price, stock)
+    def __init__(self, product_id, name, price, stock, supplier, download_size):
+        super().__init__(product_id, name, price, stock, supplier)
         download_size = float(download_size)
         if download_size < 0:
             raise ValueError("Download size must be 0 or more.")

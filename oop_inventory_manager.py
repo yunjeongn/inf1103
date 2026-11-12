@@ -4,20 +4,49 @@ import os
 
 from physical_product import PhysicalProduct
 from digital_product import DigitalProduct
+from supplier import Supplier
 from inventory import Inventory, LINE
 
 INVENTORY_FILE = "inventory.json"
 BANNER = "=" * 47
 
 
-def product_from_dict(item):
+DEFAULT_SUPPLIER_DATA = {
+    "id": "S000",
+    "name": "Unassigned",
+    "email": "unassigned@example.com",
+}
+
+
+def supplier_from_dict(data, known_suppliers):
+    supplier_id = data["id"]
+    if supplier_id not in known_suppliers:
+        known_suppliers[supplier_id] = Supplier(supplier_id, data["name"],
+                                                data["email"])
+    return known_suppliers[supplier_id]
+
+
+def supplier_to_dict(supplier):
+    return {
+        "id": supplier.get_supplier_id(),
+        "name": supplier.get_name(),
+        "email": supplier.get_contact_email(),
+    }
+
+
+def product_from_dict(item, known_suppliers=None):
+    if known_suppliers is None:
+        known_suppliers = {}
+    supplier = supplier_from_dict(item.get("supplier", DEFAULT_SUPPLIER_DATA),
+                                  known_suppliers)
     product_type = item.get("type", "physical")
     if product_type == "physical":
         return PhysicalProduct(item["id"], item["name"], item["price"],
-                               item["stock"], item.get("weight", 0.0))
+                               item["stock"], supplier,
+                               item.get("weight", 0.0))
     if product_type == "digital":
         return DigitalProduct(item["id"], item["name"], item["price"],
-                              item["stock"], item["download_size"])
+                              item["stock"], supplier, item["download_size"])
     raise ValueError(f"Unknown product type: {product_type}")
 
 
@@ -28,6 +57,7 @@ def product_to_dict(product):
         "name": product.get_name(),
         "price": product.get_price(),
         "stock": product.get_stock(),
+        "supplier": supplier_to_dict(product.get_supplier()),
     }
     if isinstance(product, DigitalProduct):
         item["download_size"] = product.get_download_size()
@@ -49,8 +79,9 @@ def load_inventory():
             data = json.load(file)
         if not isinstance(data, list):
             raise ValueError("Unexpected file format")
+        known_suppliers = {}
         for item in data:
-            inventory.add_product(product_from_dict(item))
+            inventory.add_product(product_from_dict(item, known_suppliers))
     except (OSError, ValueError, KeyError, TypeError):
         print(f"{INVENTORY_FILE} found but could not be read.")
         print("Starting with an empty inventory.")
@@ -124,6 +155,24 @@ def get_product_type():
         print("Error. Please enter 1 or 2.")
 
 
+def get_supplier(inventory):
+    supplier_id = input("Supplier ID: ").strip().upper()
+    for product in inventory.get_products():
+        if product.get_supplier().get_supplier_id() == supplier_id:
+            supplier = product.get_supplier()
+            print(f"Using existing supplier: {supplier.get_name()}")
+            return supplier
+
+    while True:
+        name = input("Supplier Name: ").strip()
+        email = input("Supplier Contact Email: ").strip()
+        try:
+            return Supplier(supplier_id, name, email)
+        except ValueError as error:
+            print(f"Error. {error}")
+            supplier_id = input("Supplier ID: ").strip().upper()
+
+
 def add_product(inventory):
     print("\nAdd New Product")
     product_id = input("Product ID: ").strip().upper()
@@ -142,13 +191,16 @@ def add_product(inventory):
     product_type = get_product_type()
     price = get_price()
     stock = get_stock("Stock Quantity: ")
+    supplier = get_supplier(inventory)
 
     if product_type == "1":
         weight = get_non_negative_number("Weight (kg): ")
-        product = PhysicalProduct(product_id, name, price, stock, weight)
+        product = PhysicalProduct(product_id, name, price, stock, supplier,
+                                  weight)
     else:
         size = get_non_negative_number("Download Size (MB): ")
-        product = DigitalProduct(product_id, name, price, stock, size)
+        product = DigitalProduct(product_id, name, price, stock, supplier,
+                                 size)
     inventory.add_product(product)
     print("\nProduct added successfully!")
 

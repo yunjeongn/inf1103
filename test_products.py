@@ -5,17 +5,27 @@ from physical_product import PhysicalProduct
 from digital_product import DigitalProduct
 from can_be_shipped import CanBeShipped
 from inventory import Inventory
+from supplier import Supplier
 from oop_inventory_manager import product_from_dict, product_to_dict
 
 
 class ProductTests(unittest.TestCase):
     def setUp(self):
-        self.physical = PhysicalProduct("G1", "Guitar", 500, 3, 3.5)
-        self.digital = DigitalProduct("OS1", "Windows", 99.99, 10, 4000)
+        self.supplier = Supplier("S1", "Acme Music", "sales@acme.example")
+        self.physical = PhysicalProduct("G1", "Guitar", 500, 3, self.supplier, 3.5)
+        self.digital = DigitalProduct("OS1", "Windows", 99.99, 10, self.supplier, 4000)
 
     def test_weight_and_download_size(self):
         self.assertEqual(self.physical.get_weight(), 3.5)
         self.assertEqual(self.digital.get_download_size(), 4000)
+
+    def test_product_keeps_supplier_reference(self):
+        self.assertIs(self.physical.get_supplier(), self.supplier)
+        self.assertIs(self.digital.get_supplier(), self.supplier)
+
+    def test_supplier_outlives_variable(self):
+        del self.supplier
+        self.assertEqual(self.physical.get_supplier().get_name(), "Acme Music")
 
     def test_fulfilment_info(self):
         self.assertIn("shipping", self.physical.get_fulfilment_info())
@@ -23,11 +33,11 @@ class ProductTests(unittest.TestCase):
 
     def test_product_is_abstract(self):
         with self.assertRaises(TypeError):
-            Product("X", "x", 1, 1)
+            Product("X", "x", 1, 1, self.supplier)
 
     def test_shipping_cost(self):
         self.assertEqual(self.physical.calculate_shipping_cost(), 12.0)
-        heavy = PhysicalProduct("H1", "Piano", 3000, 1, 100)
+        heavy = PhysicalProduct("H1", "Piano", 3000, 1, self.supplier, 100)
         self.assertEqual(heavy.calculate_shipping_cost(), 205.0)
 
     def test_digital_not_shippable(self):
