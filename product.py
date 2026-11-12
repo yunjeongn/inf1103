@@ -17,36 +17,36 @@ class Product(ABC):
         if not math.isfinite(price) or price < 0:
             raise ValueError("Price must be 0 or more.")
 
-        self.__product_id = product_id
-        self.__name = name
-        self.__price = price
+        self.__product_id: str = product_id
+        self.__name: str = name
+        self.__price: float = price
         self.__stock: int = 0
         self.__supplier: Supplier = supplier
         self.update_stock(stock)
 
-    def get_product_id(self):
+    def get_product_id(self) -> str:
         return self.__product_id
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.__name
 
-    def get_price(self):
+    def get_price(self) -> float:
         return self.__price
 
     def get_supplier(self) -> Supplier:
         return self.__supplier
 
-    def get_stock(self):
+    def get_stock(self) -> int:
         return self.__stock
 
-    def update_stock(self, quantity):
+    def update_stock(self, quantity: int) -> None:
         if isinstance(quantity, bool) or not isinstance(quantity, int):
             raise ValueError("Stock must be a whole number.")
         if quantity < 0:
             raise ValueError("Stock cannot be negative.")
         self.__stock = quantity
 
-    def display_information(self):
+    def display_information(self) -> None:
         print(f"ID: {self.__product_id}")
         print(f"Name: {self.__name}")
         print(f"Price: ${self.__price:.2f}")
@@ -54,9 +54,9 @@ class Product(ABC):
         print(f"Supplier: {self.__supplier.get_name()}")
 
     @abstractmethod
-    def get_fulfilment_info(self):
+    def get_fulfilment_info(self) -> str:
         pass
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (f"ID: {self.__product_id} | Name: {self.__name} | "
                 f"Price: ${self.__price:.2f} | Stock: {self.__stock}")

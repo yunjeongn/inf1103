@@ -2,6 +2,7 @@ import json
 import math
 import os
 
+from product import Product
 from physical_product import PhysicalProduct
 from digital_product import DigitalProduct
 from supplier import Supplier
@@ -18,7 +19,7 @@ DEFAULT_SUPPLIER_DATA = {
 }
 
 
-def supplier_from_dict(data, known_suppliers):
+def supplier_from_dict(data: dict, known_suppliers: dict[str, Supplier]) -> Supplier:
     supplier_id = data["id"]
     if supplier_id not in known_suppliers:
         known_suppliers[supplier_id] = Supplier(supplier_id, data["name"],
@@ -26,7 +27,7 @@ def supplier_from_dict(data, known_suppliers):
     return known_suppliers[supplier_id]
 
 
-def supplier_to_dict(supplier):
+def supplier_to_dict(supplier: Supplier) -> dict:
     return {
         "id": supplier.get_supplier_id(),
         "name": supplier.get_name(),
@@ -34,7 +35,8 @@ def supplier_to_dict(supplier):
     }
 
 
-def product_from_dict(item, known_suppliers=None):
+def product_from_dict(item: dict,
+                      known_suppliers: dict[str, Supplier] | None = None) -> Product:
     if known_suppliers is None:
         known_suppliers = {}
     supplier = supplier_from_dict(item.get("supplier", DEFAULT_SUPPLIER_DATA),
@@ -50,7 +52,7 @@ def product_from_dict(item, known_suppliers=None):
     raise ValueError(f"Unknown product type: {product_type}")
 
 
-def product_to_dict(product):
+def product_to_dict(product: Product) -> dict:
     item = {
         "type": "digital" if isinstance(product, DigitalProduct) else "physical",
         "id": product.get_product_id(),
@@ -66,7 +68,7 @@ def product_to_dict(product):
     return item
 
 
-def load_inventory():
+def load_inventory() -> Inventory:
     inventory = Inventory()
 
     if not os.path.exists(INVENTORY_FILE):
@@ -79,7 +81,7 @@ def load_inventory():
             data = json.load(file)
         if not isinstance(data, list):
             raise ValueError("Unexpected file format")
-        known_suppliers = {}
+        known_suppliers: dict[str, Supplier] = {}
         for item in data:
             inventory.add_product(product_from_dict(item, known_suppliers))
     except (OSError, ValueError, KeyError, TypeError):
@@ -97,7 +99,7 @@ def load_inventory():
     return inventory
 
 
-def save_inventory(inventory):
+def save_inventory(inventory: Inventory) -> bool:
     data = []
     for product in inventory.get_products():
         data.append(product_to_dict(product))
@@ -111,7 +113,7 @@ def save_inventory(inventory):
         return False
 
 
-def get_price():
+def get_price() -> float:
     while True:
         value = input("Price: ").strip()
         try:
@@ -123,7 +125,7 @@ def get_price():
         print("Error. Please enter a valid price (0 or more).")
 
 
-def get_stock(prompt):
+def get_stock(prompt: str) -> int:
     while True:
         value = input(prompt).strip()
         try:
@@ -135,7 +137,7 @@ def get_stock(prompt):
         print("Error. Please enter a whole number (0 or more).")
 
 
-def get_non_negative_number(prompt):
+def get_non_negative_number(prompt: str) -> float:
     while True:
         value = input(prompt).strip()
         try:
@@ -147,7 +149,7 @@ def get_non_negative_number(prompt):
         print("Error. Please enter a number (0 or more).")
 
 
-def get_product_type():
+def get_product_type() -> str:
     while True:
         choice = input("Product Type (1. Physical, 2. Digital): ").strip()
         if choice in ("1", "2"):
@@ -155,7 +157,7 @@ def get_product_type():
         print("Error. Please enter 1 or 2.")
 
 
-def get_supplier(inventory):
+def get_supplier(inventory: Inventory) -> Supplier:
     supplier_id = input("Supplier ID: ").strip().upper()
     for product in inventory.get_products():
         if product.get_supplier().get_supplier_id() == supplier_id:
@@ -173,7 +175,7 @@ def get_supplier(inventory):
             supplier_id = input("Supplier ID: ").strip().upper()
 
 
-def add_product(inventory):
+def add_product(inventory: Inventory) -> None:
     print("\nAdd New Product")
     product_id = input("Product ID: ").strip().upper()
     if not product_id:
@@ -205,7 +207,7 @@ def add_product(inventory):
     print("\nProduct added successfully!")
 
 
-def update_stock(inventory):
+def update_stock(inventory: Inventory) -> None:
     print("\nUpdate Stock")
     product_id = input("Enter Product ID: ").strip().upper()
     product = inventory.find_product(product_id)
@@ -222,7 +224,7 @@ def update_stock(inventory):
     print("\nStock updated successfully!")
 
 
-def search_product(inventory):
+def search_product(inventory: Inventory) -> None:
     print("\nSearch Product")
     product_id = input("Enter Product ID: ").strip().upper()
     product = inventory.find_product(product_id)
@@ -238,7 +240,7 @@ def search_product(inventory):
     print(LINE)
 
 
-def print_menu():
+def print_menu() -> None:
     print("----------- MENU -----------")
     print("1. Display All Products")
     print("2. Add Product")
@@ -249,7 +251,7 @@ def print_menu():
     print("----------------------------")
 
 
-def main():
+def main() -> None:
     print(BANNER)
     print("INVENTORY MANAGEMENT SYSTEM")
     print(BANNER)
