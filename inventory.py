@@ -35,6 +35,8 @@ class Inventory:
         print(LINE)
         if not self.__products:
             print("No products in inventory.")
+            print(LINE)
         for product in self.__products:
-            print(product)
-        print(LINE)
+            product.display_information()
+            print(product.get_fulfilment_info())
+            print(LINE)
