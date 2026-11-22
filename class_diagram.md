@@ -86,3 +86,65 @@ Relationships (each checked against Section 1 of the lab):
 | OrderLine | `order_line.py` | One product and quantity within an order, calculates its subtotal |
 | Main Program | `oop_inventory_manager.py` | Displays the menu, gets user input, creates the products and inventory, calls Inventory methods |
 | File Handling | `oop_inventory_manager.py` (`load_inventory`, `save_inventory`) | Loads and saves inventory data in `inventory.json`, using a `type` identifier (`physical` / `digital`) to rebuild the right subclass |
+
+## Lab 9 additions: Strategy and Factory
+
+```
+                                  +-----------------------------------+
+                                  | <<abstract>>                      |
+                                  | DiscountStrategy                  |
+                                  +-----------------------------------+
+                                  | + {abstract} apply(total: Real):  |
+                                  |       Real                        |
+                                  +-----------------------------------+
+                                                   ^
+                                                   | (inheritance)
+         +--------------------+--------------------+-------------------+
+         |                    |                    |                   |
++----------------+ +-------------------------+ +---------------------------+
+| NoDiscount     | | PercentageDiscount      | | BulkDiscount              |
++----------------+ +-------------------------+ +---------------------------+
+| + apply(): Real| | - percentage: Real      | | - threshold: Real         |
++----------------+ +-------------------------+ | - amount: Real            |
+                   | + apply(): Real         | +---------------------------+
+                   +-------------------------+ | + apply(): Real           |
+                                ^              +---------------------------+
+                                | (inheritance)
+                   +-------------------------+
+                   | StudentDiscount         |
+                   | (always 5%)             |
+                   +-------------------------+
+
++-------------------------------------------------------------+   0..*          1  (to DiscountStrategy above)
+| Order                                                       +----------------------> DiscountStrategy
++-------------------------------------------------------------+   (association: Order uses a strategy)
+| - order_id: String                                          |
+| - order_lines: OrderLine [0..*]                             |
+| - discount: DiscountStrategy [1]                            |
++-------------------------------------------------------------+
+| + add_order_line(product: Product, quantity: Integer): void |
+| + remove_order_line(product_id: String): Boolean            |
+| + set_discount(discount: DiscountStrategy): void            |
+| + calculate_total(): Real                                   |
++-------------------------------------------------------------+
+
++--------------------------------------------------------+                        +---------------------------+
+| ProductFactory                                         |  - - - <<creates>> - ->| <<abstract>> Product      |
++--------------------------------------------------------+      (dependency)     | (PhysicalProduct and      |
+| + {static} create(product_type: String,                |                        |  DigitalProduct are the   |
+|       product_id: String, name: String, price: Real,   |                        |  concrete products)       |
+|       stock_quantity: Integer, supplier: Supplier,     |                        +---------------------------+
+|       extra: Real): Product                            |
++--------------------------------------------------------+
+```
+
+- `DiscountStrategy` is abstract (`<<abstract>>`): it only declares `apply()`. `NoDiscount`, `PercentageDiscount`, `BulkDiscount` inherit from it; `StudentDiscount` is the extra strategy (a 5% percentage discount).
+- `Order` to `DiscountStrategy` is an **association**, `Order 0..*` to `DiscountStrategy 1`. A discount is something an order uses, not part of it, so there is no diamond. Every order has exactly one strategy (`NoDiscount` by default) and one strategy object can be shared by many orders. `set_discount()` swaps it at run time.
+- `ProductFactory` to `Product` is a **dependency** (dashed arrow labelled `<<creates>>`). The factory builds products and returns them as `Product`, but stores nothing, so it has no attribute and no diamond.
+- Validation rules live in the owning class: `Product` (price > 0, stock >= 0), `OrderLine` (quantity > 0).
+
+| Part | File | Responsibility |
+|------|------|----------------|
+| DiscountStrategy and subclasses | `discount_strategy.py` | One discount rule per class, all through `apply()` |
+| ProductFactory | `product_factory.py` | The single place that decides which concrete product to create |
+| `get_positive_float`, `load_products` | `oop_inventory_manager.py` | Re-prompting input and fault-tolerant CSV loading |
