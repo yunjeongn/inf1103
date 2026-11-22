@@ -3,7 +3,7 @@ import math
 import os
 
 from product import Product
-from physical_product import PhysicalProduct
+from product_factory import ProductFactory
 from digital_product import DigitalProduct
 from supplier import Supplier
 from inventory import Inventory, LINE
@@ -42,14 +42,12 @@ def product_from_dict(item: dict,
     supplier = supplier_from_dict(item.get("supplier", DEFAULT_SUPPLIER_DATA),
                                   known_suppliers)
     product_type = item.get("type", "physical")
-    if product_type == "physical":
-        return PhysicalProduct(item["id"], item["name"], item["price"],
-                               item["stock"], supplier,
-                               item.get("weight", 0.0))
     if product_type == "digital":
-        return DigitalProduct(item["id"], item["name"], item["price"],
-                              item["stock"], supplier, item["download_size"])
-    raise ValueError(f"Unknown product type: {product_type}")
+        extra = item["download_size"]
+    else:
+        extra = item.get("weight", 0.0)
+    return ProductFactory.create(product_type, item["id"], item["name"],
+                                 item["price"], item["stock"], supplier, extra)
 
 
 def product_to_dict(product: Product) -> dict:
@@ -196,13 +194,13 @@ def add_product(inventory: Inventory) -> None:
     supplier = get_supplier(inventory)
 
     if product_type == "1":
-        weight = get_non_negative_number("Weight (kg): ")
-        product = PhysicalProduct(product_id, name, price, stock, supplier,
-                                  weight)
+        extra = get_non_negative_number("Weight (kg): ")
+        type_name = "physical"
     else:
-        size = get_non_negative_number("Download Size (MB): ")
-        product = DigitalProduct(product_id, name, price, stock, supplier,
-                                 size)
+        extra = get_non_negative_number("Download Size (MB): ")
+        type_name = "digital"
+    product = ProductFactory.create(type_name, product_id, name, price,
+                                    stock, supplier, extra)
     inventory.add_product(product)
     print("\nProduct added successfully!")
 
