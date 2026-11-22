@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY inventory.json products.csv ./
+COPY supplier.py product.py physical_product.py digital_product.py can_be_shipped.py inventory.py order_line.py order.py discount_strategy.py product_factory.py oop_inventory_manager.py lab08_demo.py lab09_demo.py ./
+COPY tests ./tests
+
+CMD ["python", "oop_inventory_manager.py"]
