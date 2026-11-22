@@ -14,8 +14,8 @@ class Product(ABC):
         if not name:
             raise ValueError("Product name cannot be empty.")
         price = float(price)
-        if not math.isfinite(price) or price < 0:
-            raise ValueError("Price must be 0 or more.")
+        if not math.isfinite(price) or price <= 0:
+            raise ValueError("Price must be greater than zero.")
 
         self.__product_id: str = product_id
         self.__name: str = name

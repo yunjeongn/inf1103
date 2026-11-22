@@ -6,7 +6,7 @@ class OrderLine:
         if isinstance(quantity, bool) or not isinstance(quantity, int):
             raise ValueError("Quantity must be a whole number.")
         if quantity <= 0:
-            raise ValueError("Quantity must be at least 1.")
+            raise ValueError("Quantity must be greater than zero.")
         self.__product: Product = product
         self.__quantity: int = quantity
 
